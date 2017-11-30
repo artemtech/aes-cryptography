@@ -1,5 +1,11 @@
 package aes;
 
+/**
+ * @author sofyan_sugianto
+ * @author putri_kharisma
+ * @author fatimatus_zahro
+ */
+
 public class AES {
 
     private static final String banner = "AES CRYPTOGRAPHY PROGRAM\n"
