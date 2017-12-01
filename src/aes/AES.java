@@ -75,117 +75,22 @@ public class AES {
     };
 
     public static void main(String[] args) {
-        
-        int ok = 82;
-        System.out.println(Integer.toHexString(ok));
         String text = "Hello World";
-        byte a[] = text.getBytes();
-        for (int i = 0; i < a.length; i++) {            
-            System.out.print(Integer.toHexString(a[i])+" ");
-        }
-        System.out.println("\n=====================");
-        for (int i = 0; i < a.length; i++) {
-            System.out.print(a[i]+" ");
-            
-        }
-        System.out.println("\n------------------");
-        int[][] b = new int[4][4];
-        for (int i = 0; i < a.length; i++) {
-            b[i%4][i/4]=a[i];
-        }
+        String kunci = "hai";
+        int[][] encrypted = encrypt(text,kunci);
+        String hasilEnkripsi = "";
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                System.out.print(b[i][j]+"\t");
+                hasilEnkripsi += (char)encrypted[j][i];
             }
-            System.out.println();
         }
-        System.out.println("====================>sub bytes");
-        // MENGUJI SUB BYTES
-        subBytes(b);
-//        for (int i = 0; i < b.length; i++) {
-//            for (int j = 0; j < b[0].length; j++) {
-//                int hex = b[i][j];
-//                b[i][j]=sbox[hex%16][hex/16];
-//                System.out.print((b[i][j])+"\t");
-//            }
-//            System.out.println("");
-//        }
-        // MENGUJI SHIFT ROW <--
-        shiftRow(b);
-        System.out.println("====================>shift row");
-        for (int i = 0; i < b.length; i++) {
-            for (int j = 0; j < b[0].length; j++) {
-                System.out.print((b[i][j])+"\t");
-            }
-            System.out.println("");
-        }
-        System.out.println("====================>mix column");
-        mixColumn(b);
-        for (int i = 0; i < b.length; i++) {
-            for (int j = 0; j < b[0].length; j++) {
-                System.out.print((b[i][j])+"\t");
-            }
-            System.out.println("");
-        }
-        
-//        Scanner inputs = new Scanner(System.in);
-//        System.out.print(banner);
-//        int pilih = inputs.nextInt();
-//        inputs.nextLine();
-//        System.out.print("Plaintext : ");
-//        String source = inputs.nextLine();
-//        System.out.print("Kunci : ");
-//        String kunci = inputs.nextLine();
-//
-//        byte[] plaint_byte = stringToByte(source);
-//        for (int i = 0; i < plaint_byte.length; i++) {
-//            System.out.print(plaint_byte[i] + " ");
-//        }
-
-//        System.out.printf("\n%s\n",plainText);
-//        String kunci = "kriptofun";
-//        System.out.println(kunci);
-//        byte[] kunci_byte = stringToByte(kunci);
-//        for (int i = 0; i < kunci_byte.length; i++) {
-//            System.out.print(kunci_byte[i]+" ");
-//        }
-//        String cipherText = encrypt(plainText,kunci);
-//        String hasilDecrypt = decrypt(cipherText,kunci);
+        System.out.println("plain text: "+text);
+        System.out.println("enkrypted="+hasilEnkripsi);
     }
 
-    // operasi Mix Column
-    private static void mixColumn(int[][] state) {
-        int temp[][] = new int[4][4];
-        //kolom 1
-        temp[0][0] = mc2[state[0][0]/16][state[0][0]%16] ^ mc3[state[1][0]/16][state[1][0]%16] ^ state[2][0] ^ state[3][0];
-        temp[1][0] = state[0][0] ^ mc2[state[1][0]/16][state[1][0]%16] ^ mc3[state[2][0]/16][state[2][0]%16] ^ state[3][0];
-        temp[2][0] = state[0][0] ^ state[1][0] ^ mc2[state[2][0]/16][state[2][0]%16] ^ mc3[state[3][0]/16][state[3][0]%16];
-        temp[3][0] = mc3[state[0][0]/16][state[0][0]%16] ^ state[1][0] ^ state[2][0] ^ mc2[state[3][0]/16][state[3][0]%16];
-        // kolom 2
-        temp[0][1] = mc2[state[0][1]/16][state[0][1]%16] ^ mc3[state[1][1]/16][state[1][1]%16] ^ state[2][1] ^ state[3][1];
-        temp[1][1] = state[0][1] ^ mc2[state[1][1]/16][state[1][1]%16] ^ mc3[state[2][1]/16][state[2][1]%16] ^ state[3][1];
-        temp[2][1] = state[0][1] ^ state[1][1] ^ mc2[state[2][1]/16][state[2][1]%16] ^ mc3[state[3][1]/16][state[3][1]%16];
-        temp[3][1] = mc3[state[0][1]/16][state[0][1]%16] ^ state[1][1] ^ state[2][1] ^ mc2[state[3][1]/16][state[3][1]%16];
-        // kolom 3
-        temp[0][2] = mc2[state[0][2]/16][state[0][2]%16] ^ mc3[state[1][2]/16][state[1][2]%16] ^ state[2][2] ^ state[3][2];
-        temp[1][2] = state[0][2] ^ mc2[state[1][2]/16][state[1][2]%16] ^ mc3[state[2][2]/16][state[2][2]%16] ^ state[3][2];
-        temp[2][2] = state[0][2] ^ state[1][2] ^ mc2[state[2][2]/16][state[2][2]%16] ^ mc3[state[3][2]/16][state[3][2]%16];
-        temp[3][2] = mc3[state[0][2]/16][state[0][2]%16] ^ state[1][2] ^ state[2][2] ^ mc2[state[3][2]/16][state[3][2]%16];
-        //kolom 4
-        temp[0][3] = mc2[state[0][3]/16][state[0][3]%16] ^ mc3[state[1][3]/16][state[1][3]%16] ^ state[2][3] ^ state[3][3];
-        temp[1][3] = state[0][3] ^ mc2[state[1][3]/16][state[1][3]%16] ^ mc3[state[2][3]/16][state[2][3]%16] ^ state[3][3];
-        temp[2][3] = state[0][3] ^ state[1][3] ^ mc2[state[2][3]/16][state[2][3]%16] ^ mc3[state[3][3]/16][state[3][3]%16];
-        temp[3][3] = mc3[state[0][3]/16][state[0][3]%16] ^ state[1][3] ^ state[2][3] ^ mc2[state[3][3]/16][state[3][3]%16];        
-        
-        // copy data temp ke state di parameter...
-        for (int i = 0; i < temp.length; i++) {
-            System.arraycopy(temp[i], 0, state[i], 0, temp[i].length);
-        }
-    }
-
-  
     // fungsi untuk enkripsi
-    private void encrypt(String plainText, String kunci) {
+    private static int[][] encrypt(String plainText, String kunci) {
+        int[][] result = new int[4][4];
         byte[] bytesText = plainText.getBytes();
         byte[] bytesKunci = kunci.getBytes();
         int[][] state = new int[4][4];
@@ -193,22 +98,37 @@ public class AES {
         convertBytes2State(bytesText, state);
         convertBytes2State(bytesKunci, key);
         
+        // kunci yang akan digunakan untuk key tiap round
+        // butuh: original key + Nr * 16
+        int[][] expandedKey = new int[4][4 * Nr + 4];
+        // ronde yang dibutuhkan: -> untuk AES-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
+        int banyakRonde = 9;
         // ekspansi kunci 
-        keyExpansion();
+        keyExpansion(key,expandedKey);
+             
         // initial round -> addroundkey
-        addRoundKey(state,key);
+        addRoundKey(state,expandedKey);
+        
         // pengulangan round 
-        for (int i = 1; i < Nr ; i++) {
+        for (int i = 0; i < banyakRonde ; i++) {
             subBytes(state);
             shiftRow(state);
             mixColumn(state);
-            addRoundKey(state, key);
+            addRoundKey(state, expandedKey, 4 * (i + 1));
         }
+        
         // final round
         subBytes(state);
         shiftRow(state);
-        mixColumn(state);
-        addRoundKey(state, key);
+        addRoundKey(state, expandedKey, 40);
+        
+        // copy bytes ke string
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                result[i][j] = state[j][i];
+            }
+        }
+        return result;
     }
 
     // fungsi untuk dekripsi
@@ -217,18 +137,43 @@ public class AES {
     }
 
     // fungsi untuk keyExpansion
-    private static void keyExpansion() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private static void keyExpansion(int[][] inputKey, int[][] expandedKey) {
+        // Kunci awal dari expandedKey adalah input key itu sendiri..
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                expandedKey[i][j] = inputKey[i][j];
+            }
+        }
+        
+        int currentGeneratedWords = 4;
+        int rconState = 1; // key rcon dimulai dari 1
+        int temp[] = new int[4];
+        while(currentGeneratedWords < (4 * Nr)+4){
+            for (int i = 0; i < 4; i++) {
+                temp[i] = expandedKey[i][currentGeneratedWords - 1];
+            }
+            // setiap 4 word kunci yang  telah digenerate, lakukan operasi rcon
+            if (currentGeneratedWords % 4 == 0) {
+                keyExpansionCore(temp, rconState);
+                rconState++;
+            }
+            
+            // melakukan XOR dengan kunci 4bit awal yang sudah digenerate
+            for (int i = 0; i < 4; i++) {
+                expandedKey[i][currentGeneratedWords] = expandedKey[i][currentGeneratedWords - 4] ^ temp[i];
+            }
+                currentGeneratedWords++;
+        }
     }
     
     // core dari keyExpansion -> rotasi - subword (subBytes) - Rcon
     private static void keyExpansionCore(int[] input, int index){
        // rotasi
        int temp = input[0];
-       input[1] = input[0];
-       input[2] = input[1];
-       input[3] = input[2];
-       input[0] = temp;
+       input[0] = input[1];
+       input[1] = input[2];
+       input[2] = input[3];
+       input[3] = temp;
        
        // subwords 
         for (int i = 0; i < 4; i++) {
@@ -237,7 +182,7 @@ public class AES {
         
         // rcon
         input[0] ^= rcon[index];
-        
+
     }
     
     // memasukkan round key dari key ke state, yang sesungguhnya adalah operasi XOR dari keduanya..
@@ -248,6 +193,14 @@ public class AES {
             }
         }
     }
+    
+    private static void addRoundKey(int[][] state, int[][] key,int begin) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[i][j] ^= key[i][begin + j];
+            }
+        }
+    }
 
     // operasi subBytes -> mengganti setiap elemen state dengan nilai sbox yang sesuai
     private static void subBytes(int[][] state) {
@@ -255,9 +208,9 @@ public class AES {
             for (int j = 0; j < state[0].length; j++) {
                 int hex = state[i][j];
                 state[i][j]=sbox[hex/16][hex%16];
-                System.out.print((state[i][j])+"\t");
+//                System.out.print((state[i][j])+"\t");
             }
-            System.out.println("");
+//            System.out.println("");
         }
     }
 
@@ -293,6 +246,41 @@ public class AES {
         // end shiftRow
     }
 
+    // operasi Mix Column
+    private static void mixColumn(int[][] state) {
+        int temp[][] = new int[4][4];
+        
+        //kolom 1
+        temp[0][0] = mc2[state[0][0]/16][state[0][0]%16] ^ mc3[state[1][0]/16][state[1][0]%16] ^ state[2][0] ^ state[3][0];
+        temp[1][0] = state[0][0] ^ mc2[state[1][0]/16][state[1][0]%16] ^ mc3[state[2][0]/16][state[2][0]%16] ^ state[3][0];
+        temp[2][0] = state[0][0] ^ state[1][0] ^ mc2[state[2][0]/16][state[2][0]%16] ^ mc3[state[3][0]/16][state[3][0]%16];
+        temp[3][0] = mc3[state[0][0]/16][state[0][0]%16] ^ state[1][0] ^ state[2][0] ^ mc2[state[3][0]/16][state[3][0]%16];
+
+        // kolom 2
+        temp[0][1] = mc2[state[0][1]/16][state[0][1]%16] ^ mc3[state[1][1]/16][state[1][1]%16] ^ state[2][1] ^ state[3][1];
+        temp[1][1] = state[0][1] ^ mc2[state[1][1]/16][state[1][1]%16] ^ mc3[state[2][1]/16][state[2][1]%16] ^ state[3][1];
+        temp[2][1] = state[0][1] ^ state[1][1] ^ mc2[state[2][1]/16][state[2][1]%16] ^ mc3[state[3][1]/16][state[3][1]%16];
+        temp[3][1] = mc3[state[0][1]/16][state[0][1]%16] ^ state[1][1] ^ state[2][1] ^ mc2[state[3][1]/16][state[3][1]%16];
+
+        // kolom 3
+        temp[0][2] = mc2[state[0][2]/16][state[0][2]%16] ^ mc3[state[1][2]/16][state[1][2]%16] ^ state[2][2] ^ state[3][2];
+        temp[1][2] = state[0][2] ^ mc2[state[1][2]/16][state[1][2]%16] ^ mc3[state[2][2]/16][state[2][2]%16] ^ state[3][2];
+        temp[2][2] = state[0][2] ^ state[1][2] ^ mc2[state[2][2]/16][state[2][2]%16] ^ mc3[state[3][2]/16][state[3][2]%16];
+        temp[3][2] = mc3[state[0][2]/16][state[0][2]%16] ^ state[1][2] ^ state[2][2] ^ mc2[state[3][2]/16][state[3][2]%16];
+
+        //kolom 4
+        temp[0][3] = mc2[state[0][3]/16][state[0][3]%16] ^ mc3[state[1][3]/16][state[1][3]%16] ^ state[2][3] ^ state[3][3];
+        temp[1][3] = state[0][3] ^ mc2[state[1][3]/16][state[1][3]%16] ^ mc3[state[2][3]/16][state[2][3]%16] ^ state[3][3];
+        temp[2][3] = state[0][3] ^ state[1][3] ^ mc2[state[2][3]/16][state[2][3]%16] ^ mc3[state[3][3]/16][state[3][3]%16];
+        temp[3][3] = mc3[state[0][3]/16][state[0][3]%16] ^ state[1][3] ^ state[2][3] ^ mc2[state[3][3]/16][state[3][3]%16];        
+        
+        // copy data temp ke state di parameter...
+        for (int i = 0; i < temp.length; i++) {
+            for (int j = 0; j < temp[i].length; j++) {
+                state[i][j] = temp[i][j];
+            }
+        }
+    }
     
     // konversi dari bytes ke array 4x4
     private static void convertBytes2State(byte[] bytesText, int[][] state) {
