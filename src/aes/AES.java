@@ -61,12 +61,20 @@ public class AES {
    /*E*/{0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61}, 
    /*F*/{0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d}};
     
+    /** Tabel Galois. 
+     *  sebagai referensi menggunakan tabel referensi mana dalam operasi {@link #mixColumn(int[][]) }
+     */
+    
     public static final int[][] tabelGalois = {
         {0x02, 0x03, 0x01, 0x01},
         {0x01, 0x02, 0x03, 0x01},
         {0x01, 0x01, 0x02, 0x03},
         {0x03, 0x01, 0x01, 0x02}
     };
+    
+    /** Tabel Invers Galois.
+     * sebagai referensi menggunakan tabel referensi mana dalam operasi {@link #invMixColumn(int[][]) }
+     */
     public static final int[][] invTabelGalois = {
         //14 13 11 9
         {0x0e, 0x0b, 0x0d, 0x09},
@@ -76,17 +84,44 @@ public class AES {
     };
 
     public static void main(String[] args) {
+//        ArrayList<Integer> karakter = new ArrayList<>();
         String text = "Hello World";
+//        String convertedText="";
+//        for (int i = 0; i < text.getBytes().length; i++) {
+//            System.out.print(text.getBytes()[i]+" ");
+//            convertedText += Integer.toHexString(text.getBytes()[i]);
+//        }
+//        System.out.println("");
+//        System.out.println(convertedText);
+//        for (int i = 0; i < convertedText.length(); i+=2) {
+//            String a = "";
+//            int o = i;
+//            while(a.length() < 2){
+//                a+=convertedText.charAt(o);
+//                o++;
+//            }
+//            karakter.add(Integer.decode("0x"+a));
+//        }
+//        
+//        for (int i = 0; i < karakter.size(); i++) {
+//            System.out.print(karakter.get(i)+" ");
+//        }
+//        System.out.println("");
+//        System.out.println(karakter.size());
+        
         String kunci = "hai";
         int[][] encrypted = encrypt(text,kunci);
         String hasilEnkripsi = "";
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                hasilEnkripsi += (char)encrypted[j][i];
+                hasilEnkripsi += Integer.toHexString(encrypted[j][i])+"";
             }
         }
         System.out.println("plain text: "+text);
         System.out.println("enkrypted="+hasilEnkripsi);
+        decrypt(hasilEnkripsi, kunci);
+//        convertHex2State(hasilEnkripsi, sbox);
+//        System.out.println(hasilEnkripsi);
     }
 
     // fungsi untuk enkripsi
@@ -104,7 +139,7 @@ public class AES {
         int banyakRonde = 9;
         // ekspansi kunci 
         keyExpansion(key,expandedKey);
-             
+
         // initial round -> addroundkey
         addRoundKey(state,expandedKey);
         
@@ -134,29 +169,40 @@ public class AES {
     private static void decrypt(String cipherText, String kunci) {
         int[][] state = new int[4][4];
         int[][] key = new int[4][4];
+        convertHex2State(cipherText, state);
+        convertBytes2State(kunci.getBytes(), key);
+//      // uji chipertext awal:        
+//        System.out.println("\n--------------------------");
+//        for (int i = 0; i < 4; i++) {
+//            for (int j = 0; j < 4; j++) {
+//                System.out.print(state[i][j]+"\t");
+//            }
+//            System.out.println("");
+//        }
+        
         // kunci yang akan digunakan untuk key tiap round
         // butuh: original key + Nr * 16
         int[][] expandedKey = new int[4][4 * Nr + 4];
         // ronde yang dibutuhkan: -> untuk AES-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
         int banyakRonde = 9;
         
-        keyExpansion(key,expandedKey);
+//        keyExpansion(key,expandedKey);
              
         // initial round -> addroundkey shiftrow dan subbytes
-        addRoundKey(state, expandedKey, 40);
-        invShiftRow(state);
-        invSubBytes(state);
+        invAddRoundKey(state, expandedKey, 40);
         
         // pengulangan round 
         for (int i = 0; i < banyakRonde ; i++) {
-            addRoundKey(state, expandedKey, 4 * (i + 1));
-            invMixColumn(state);
-            invShiftRow(state);
             invSubBytes(state);
+            invShiftRow(state);
+            invMixColumn(state);
+            invAddRoundKey(state, expandedKey, 4 * (i + 1));
         }
         
         // final round
-        addRoundKey(state,expandedKey);
+        invShiftRow(state);
+        invSubBytes(state);
+        invAddRoundKey(state,expandedKey);
         
     }
 
@@ -225,8 +271,11 @@ public class AES {
             }
         }
     }
-
-    // operasi subBytes -> mengganti setiap elemen state dengan nilai sbox yang sesuai
+    
+    /** Sub Bytes. Operasi Sub Bytes mengganti setiap elemen state dengan nilai sbox yang sesuai.
+     * tabel referensi yang digunakan adalah tabel <b>{@code sbox}</b>
+     * @param state inputan berupa 4x4 array integer
+     */
     private static void subBytes(int[][] state) {
         for (int i = 0; i < state.length; i++) {
             for (int j = 0; j < state[0].length; j++) {
@@ -238,7 +287,13 @@ public class AES {
         }
     }
 
-    // menggeser tiap baris ke kiri, lalu kelebihan kolomnya digeser ke paling kanan
+    /** Shift Row. 
+     * menggeser ke kiri tiap baris state. Baris pertama tetap.
+     * Baris kedua digeser ke kiri 1x.
+     * Baris ketiga digeser ke kiri 2x.
+     * Baris keempat digeser ke kiri 3x.
+     * @param state inputan berupa 4x4 array Integer
+     */
     private static void shiftRow(int[][] state) {
         int[][] temp = new int[4][4];
         //row 1 tetap
@@ -270,7 +325,15 @@ public class AES {
         // end shiftRow
     }
 
-    // operasi Mix Column
+    /** Operasi Mix Column.
+     * menggunakan tabel bantuan {@code mc2} dan {@code mc3} sebagai pengganti
+     * nilai dari perkalian matrik galois dengan {@code state}.
+     * Lalu menambahkan hasilnya dengan melakukan operasi XOR
+     * 
+     * @param state berupa array 4x4 Integer
+     * @see #mixColumn(int[][]) 
+     * @see #tabelGalois
+     */
     private static void mixColumn(int[][] state) {
         int temp[][] = new int[4][4];
         
@@ -312,18 +375,149 @@ public class AES {
             state[i%4][i/4]=bytesText[i];
         }
     }
-
-    //fungsi fungsi untuk dekripsi
-        private static void invShiftRow(int[][] state) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+    // konversi dari int ke array 4x4
+    private static void convertInt2State(int[] intText, int[][] state) {
+        for (int i = 0; i < intText.length; i++) {
+            state[i%4][i/4]=intText[i];
+        }
+    }
+    
+    // konversi dari hex ke array 4x4 int
+    private static void convertHex2State(String hex, int[][] state){
+        String tmp = hex;
+        int[] result = new int[hex.length()/2];
+        for (int i = 0; i < tmp.length(); i+=2) {
+            String a = "";
+            int idx = i;
+            while(a.length() < 2){
+                a += tmp.charAt(idx);
+                idx++;
+            }
+            result[i/2] = Integer.decode("0x"+a);
+        }
+        convertInt2State(result, state);
     }
 
+    /** 
+     * Fungsi-fungsi invers untuk Dekripsi.
+     */
+    
+    /** Invers Shift Row. 
+     * menggeser ke kanan tiap baris state. Baris pertama tetap.
+     * Baris kedua digeser ke kanan 1x
+     * Baris ketiga digeser ke kanan 2x
+     * Baris keempat digeser ke kanan 3x
+     * @param state inputan berupa 4x4 array Integer
+     * @see #shiftRow(int[][]) 
+     */
+    private static void invShiftRow(int[][] state) {
+        int[][] temp = new int[4][4];
+        //row 1 tetap
+        temp[0][0] = state[0][0];
+        temp[0][1] = state[0][1];
+        temp[0][2] = state[0][2];
+        temp[0][3] = state[0][3];
+        //row 2 geser kanan 1x
+        temp[1][0] = state[1][3];
+        temp[1][1] = state[1][0];
+        temp[1][2] = state[1][1];
+        temp[1][3] = state[1][2];
+        //row 3 geser kanan 2x
+        temp[2][0] = state[2][2];
+        temp[2][1] = state[2][3];
+        temp[2][2] = state[2][0];
+        temp[2][3] = state[2][1];
+        //row 4 geser kanan 3x
+        temp[3][0] = state[3][1];
+        temp[3][1] = state[3][2];
+        temp[3][2] = state[3][3];
+        temp[3][3] = state[3][0];
+        // copy data temp ke state asli..
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[i][j] = temp[i][j];
+            }
+        }
+        // end shiftRow
+    }
+    
+    /** Invers Sub Bytes. Invers dari operasi subBytes()
+     * tabel referensi yang digunakan adalah tabel {@code invsbox}
+     * @param state inputan berupa 4x4 array Integer
+     * @see #subBytes(int[][]) 
+     */
     private static void invSubBytes(int[][] state) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (int i = 0; i < state.length; i++) {
+            for (int j = 0; j < state[0].length; j++) {
+                int hex = state[i][j];
+                state[i][j]=invsbox[hex/16][hex%16];
+//                System.out.print((state[i][j])+"\t");
+            }
+//            System.out.println("");
+        }
     }
 
+    /** Operasi Invers Mix Column. Invers dari mixColumn()
+     * menggunakan tabel bantuan {@code mc9}, {@code mc11}, {@code mc13} 
+     * dan {@code mc14} sebagai pengganti
+     * nilai dari perkalian matrik invers galois dengan {@code state}.
+     * Lalu menambahkan hasilnya dengan melakukan operasi XOR
+     * 
+     * @param state berupa array 4x4 Integer
+     * @see #mixColumn(int[][]) 
+     * @see #invTabelGalois
+     * @see #tabelGalois
+     */
     private static void invMixColumn(int[][] state) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int temp[][] = new int[4][4];
+        // kolom 1
+        temp[0][0] = mc14[state[0][0]/16][state[0][0]%16] ^ mc11[state[1][0]/16][state[1][0]%16] ^ mc13[state[2][0]/16][state[2][0]%16] ^ mc9[state[3][0]/16][state[3][0]%16];
+        temp[1][0] = mc9[state[0][0]/16][state[0][0]%16] ^ mc14[state[1][0]/16][state[1][0]%16] ^ mc11[state[2][0]/16][state[2][0]%16] ^ mc13[state[3][0]/16][state[3][0]%16];
+        temp[2][0] = mc13[state[0][0]/16][state[0][0]%16] ^ mc9[state[1][0]/16][state[1][0]%16] ^ mc14[state[2][0]/16][state[2][0]%16] ^ mc11[state[3][0]/16][state[3][0]%16];
+        temp[3][0] = mc11[state[0][0]/16][state[0][0]%16] ^ mc13[state[1][0]/16][state[1][0]%16] ^ mc9[state[2][0]/16][state[2][0]%16] ^ mc14[state[3][0]/16][state[3][0]%16];
+        
+
+        // kolom 2
+        temp[0][1] = mc14[state[0][1]/16][state[0][1]%16] ^ mc11[state[1][1]/16][state[1][1]%16] ^ mc13[state[2][1]/16][state[2][1]%16] ^ mc9[state[3][1]/16][state[3][1]%16];
+        temp[1][1] = mc9[state[0][1]/16][state[0][1]%16] ^ mc14[state[1][1]/16][state[1][1]%16] ^ mc11[state[2][1]/16][state[2][1]%16] ^ mc13[state[3][1]/16][state[3][1]%16];
+        temp[2][1] = mc13[state[0][1]/16][state[0][1]%16] ^ mc9[state[1][1]/16][state[1][1]%16] ^ mc14[state[2][1]/16][state[2][1]%16] ^ mc11[state[3][1]/16][state[3][1]%16];
+        temp[3][1] = mc11[state[0][1]/16][state[0][1]%16] ^ mc13[state[1][1]/16][state[1][1]%16] ^ mc9[state[2][1]/16][state[2][1]%16] ^ mc14[state[3][1]/16][state[3][1]%16];
+
+        // kolom 3
+        temp[0][2] = mc14[state[0][2]/16][state[0][2]%16] ^ mc11[state[1][2]/16][state[1][2]%16] ^ mc13[state[2][2]/16][state[2][2]%16] ^ mc9[state[3][2]/16][state[3][2]%16];
+        temp[1][2] = mc9[state[0][2]/16][state[0][2]%16] ^ mc14[state[1][2]/16][state[1][2]%16] ^ mc11[state[2][2]/16][state[2][2]%16] ^ mc13[state[3][2]/16][state[3][2]%16];
+        temp[2][2] = mc13[state[0][2]/16][state[0][2]%16] ^ mc9[state[1][2]/16][state[1][2]%16] ^ mc14[state[2][2]/16][state[2][2]%16] ^ mc11[state[3][2]/16][state[3][2]%16];
+        temp[3][2] = mc11[state[0][2]/16][state[0][2]%16] ^ mc13[state[1][2]/16][state[1][2]%16] ^ mc9[state[2][2]/16][state[2][2]%16] ^ mc14[state[3][2]/16][state[3][2]%16];
+
+        // kolom 4
+        temp[0][3] = mc14[state[0][3]/16][state[0][3]%16] ^ mc11[state[1][3]/16][state[1][3]%16] ^ mc13[state[2][3]/16][state[2][3]%16] ^ mc9[state[3][3]/16][state[3][3]%16];
+        temp[1][3] = mc9[state[0][3]/16][state[0][3]%16] ^ mc14[state[1][3]/16][state[1][3]%16] ^ mc11[state[2][3]/16][state[2][3]%16] ^ mc13[state[3][3]/16][state[3][3]%16];
+        temp[2][3] = mc13[state[0][3]/16][state[0][3]%16] ^ mc9[state[1][3]/16][state[1][3]%16] ^ mc14[state[2][3]/16][state[2][3]%16] ^ mc11[state[3][3]/16][state[3][3]%16];
+        temp[3][3] = mc11[state[0][3]/16][state[0][3]%16] ^ mc13[state[1][3]/16][state[1][3]%16] ^ mc9[state[2][3]/16][state[2][3]%16] ^ mc14[state[3][3]/16][state[3][3]%16];        
+        
+        // copy data temp ke state di parameter...
+        for (int i = 0; i < temp.length; i++) {
+            for (int j = 0; j < temp[i].length; j++) {
+                state[i][j] = temp[i][j];
+            }
+        }
+    }
+    
+    private static void invAddRoundKey(int[][] state, int[][] key) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[i][j] ^= key[i][j];
+            }
+        }
+    }
+    
+    private static void invAddRoundKey(int[][] state, int[][] key,int begin) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[i][j] ^= key[i][begin + j];
+            }
+        }
     }
     
     public static int[][] mc2 = {
