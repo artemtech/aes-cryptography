@@ -68,6 +68,7 @@ public class AES {
         {0x03, 0x01, 0x01, 0x02}
     };
     public static final int[][] invTabelGalois = {
+        //14 13 11 9
         {0x0e, 0x0b, 0x0d, 0x09},
         {0x09, 0x0e, 0x0b, 0x0d},
         {0x0d, 0x09, 0x0e, 0x0b},
@@ -91,12 +92,10 @@ public class AES {
     // fungsi untuk enkripsi
     private static int[][] encrypt(String plainText, String kunci) {
         int[][] result = new int[4][4];
-        byte[] bytesText = plainText.getBytes();
-        byte[] bytesKunci = kunci.getBytes();
         int[][] state = new int[4][4];
         int[][] key = new int[4][4];
-        convertBytes2State(bytesText, state);
-        convertBytes2State(bytesKunci, key);
+        convertBytes2State(plainText.getBytes(), state);
+        convertBytes2State(kunci.getBytes(), key);
         
         // kunci yang akan digunakan untuk key tiap round
         // butuh: original key + Nr * 16
@@ -133,7 +132,32 @@ public class AES {
 
     // fungsi untuk dekripsi
     private static void decrypt(String cipherText, String kunci) {
-        // TODO
+        int[][] state = new int[4][4];
+        int[][] key = new int[4][4];
+        // kunci yang akan digunakan untuk key tiap round
+        // butuh: original key + Nr * 16
+        int[][] expandedKey = new int[4][4 * Nr + 4];
+        // ronde yang dibutuhkan: -> untuk AES-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
+        int banyakRonde = 9;
+        
+        keyExpansion(key,expandedKey);
+             
+        // initial round -> addroundkey shiftrow dan subbytes
+        addRoundKey(state, expandedKey, 40);
+        invShiftRow(state);
+        invSubBytes(state);
+        
+        // pengulangan round 
+        for (int i = 0; i < banyakRonde ; i++) {
+            addRoundKey(state, expandedKey, 4 * (i + 1));
+            invMixColumn(state);
+            invShiftRow(state);
+            invSubBytes(state);
+        }
+        
+        // final round
+        addRoundKey(state,expandedKey);
+        
     }
 
     // fungsi untuk keyExpansion
@@ -289,6 +313,18 @@ public class AES {
         }
     }
 
+    //fungsi fungsi untuk dekripsi
+        private static void invShiftRow(int[][] state) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private static void invSubBytes(int[][] state) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private static void invMixColumn(int[][] state) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
     public static int[][] mc2 = {
               /*0    1      2     3     4     5     6    7      8    9      a    b      c     d    e     f*/
