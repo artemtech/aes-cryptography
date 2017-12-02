@@ -4,6 +4,9 @@ package aes;
  * @author sofyan_sugianto
  * @author putri_kharisma
  * @author fatimatus_zahro
+ * 
+ * Referensi pengerjaan: AES Cryptography -> What's Creel (youtube)
+ * Referensi tabel: Wikipedia
  */
 
 public class AES {
@@ -96,6 +99,7 @@ public class AES {
         }
         return res;
     }
+    
     /** Fungsi Enkripsi.
      *
      * @param plainText berupa pesan biasa yang hendak dienkripsi

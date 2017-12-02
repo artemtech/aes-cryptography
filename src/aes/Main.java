@@ -6,6 +6,8 @@ import java.util.Scanner;
  * @author sofyan_sugianto
  * @author putri_kharisma
  * @author fatimatus_zahro
+ * 
+ * Referensi pengerjaan: AES Cryptography -> What's Creel (youtube)
  */
 
 public class Main {
