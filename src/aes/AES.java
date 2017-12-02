@@ -84,7 +84,21 @@ public class AES {
         {0x0d, 0x09, 0x0e, 0x0b},
         {0x0b, 0x0d, 0x09, 0x0e}
     };
-    
+    public String text2Hex(String plainText){
+        String res = "";
+        int[] c = new int[16];
+        for (int i = 0; i < plainText.getBytes().length; i++) {
+            c[i] = plainText.getBytes()[i];
+        }
+        for (int i = 0; i < c.length; i++) {
+            if (Integer.toHexString(c[i]).length() < 2) {
+                    res += "0"+Integer.toHexString(c[i])+"";
+                }else{
+                    res += Integer.toHexString(c[i])+"";
+                }
+        }
+        return res;
+    }
     /** Fungsi Enkripsi.
      *
      * @param plainText berupa pesan biasa yang hendak dienkripsi
@@ -95,7 +109,6 @@ public class AES {
         int[] c = new int[plainText.getBytes().length];
         int[] k = new int[kunci.getBytes().length];
         
-//        int[][] result = new int[4][4];
         String hasilEnkripsi = "";
         int[][] state = new int[4][4];
         int[][] key = new int[4][4];
@@ -112,7 +125,7 @@ public class AES {
         // kunci yang akan digunakan untuk key tiap round
         // butuh: original key + Nr * 16
         int[][] expandedKey = new int[4][4 * Nr + 4];
-        // ronde yang dibutuhkan: -> untuk Main-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
+        // ronde yang dibutuhkan: -> untuk AES-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
         int banyakRonde = 9;
         // ekspansi kunci 
         keyExpansion(key,expandedKey);
