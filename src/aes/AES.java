@@ -1,14 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package aes;
 
 /**
- *
- * @author altintop
+ * @author sofyan_sugianto
+ * @author putri_kharisma
+ * @author fatimatus_zahro
  */
+
 public class AES {
     private static final int Nk = 4; // panjang kunci tiap blok
     private static final int Nb = 4; // panjang blok teks
