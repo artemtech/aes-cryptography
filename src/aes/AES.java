@@ -1,28 +1,29 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package aes;
 
 /**
- * @author sofyan_sugianto
- * @author putri_kharisma
- * @author fatimatus_zahro
+ *
+ * @author altintop
  */
-
 public class AES {
-
-    private static final String banner = "AES CRYPTOGRAPHY PROGRAM\n"
-      + "------------------------\n"
-      + "1. ENCRYPT\n"
-      + "2. DECRYPT\n"
-      + "------------------------\n"
-      + "Pilih (1/2) ? ";
-    /**
-     * AES-128
-     */
     private static final int Nk = 4; // panjang kunci tiap blok
     private static final int Nb = 4; // panjang blok teks
     private static final int Nr = 10; // banyak putaran yang harus dilakukan
 
-    //blok sbox
-    public static final int[][] sbox = {
+     /**
+     * AES. Advanced Encryption Standard - 128
+     */
+    public AES(){
+    }
+    
+    /** Tabel SBox.
+     * digunakan untuk substitusi state saat menjalankan perintah {@link #subBytes(int[][]) } 
+     */
+    public static final int[][] SBOX = {
         /*0    1      2     3     4      5     6     7     8    9     A     B      C    D     E     F  */
    /*0*/{0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76}, 
    /*1*/{0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0}, 
@@ -41,8 +42,10 @@ public class AES {
    /*E*/{0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf}, 
    /*F*/{0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}};
     
-    //invers sbox
-    public static final int[][] invsbox = {
+    /** Tabel invers Sbox.
+     * digunakan untuk melakukan substitusi state saat menjalankan perintah {@link #invSubBytes(int[][]) }
+     */
+    public static final int[][] INV_SBOX = {
         /*0    1      2     3     4      5     6     7     8    9     A     B      C    D     E     F  */
    /*0*/{0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb}, 
    /*1*/{0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb}, 
@@ -64,8 +67,7 @@ public class AES {
     /** Tabel Galois. 
      *  sebagai referensi menggunakan tabel referensi mana dalam operasi {@link #mixColumn(int[][]) }
      */
-    
-    public static final int[][] tabelGalois = {
+    public static final int[][] GALOIS = {
         {0x02, 0x03, 0x01, 0x01},
         {0x01, 0x02, 0x03, 0x01},
         {0x01, 0x01, 0x02, 0x03},
@@ -75,139 +77,130 @@ public class AES {
     /** Tabel Invers Galois.
      * sebagai referensi menggunakan tabel referensi mana dalam operasi {@link #invMixColumn(int[][]) }
      */
-    public static final int[][] invTabelGalois = {
+    public static final int[][] INV_GALOIS = {
         //14 13 11 9
         {0x0e, 0x0b, 0x0d, 0x09},
         {0x09, 0x0e, 0x0b, 0x0d},
         {0x0d, 0x09, 0x0e, 0x0b},
         {0x0b, 0x0d, 0x09, 0x0e}
     };
-
-    public static void main(String[] args) {
-//        ArrayList<Integer> karakter = new ArrayList<>();
-        String text = "Hello World";
-//        String convertedText="";
-//        for (int i = 0; i < text.getBytes().length; i++) {
-//            System.out.print(text.getBytes()[i]+" ");
-//            convertedText += Integer.toHexString(text.getBytes()[i]);
-//        }
-//        System.out.println("");
-//        System.out.println(convertedText);
-//        for (int i = 0; i < convertedText.length(); i+=2) {
-//            String a = "";
-//            int o = i;
-//            while(a.length() < 2){
-//                a+=convertedText.charAt(o);
-//                o++;
-//            }
-//            karakter.add(Integer.decode("0x"+a));
-//        }
-//        
-//        for (int i = 0; i < karakter.size(); i++) {
-//            System.out.print(karakter.get(i)+" ");
-//        }
-//        System.out.println("");
-//        System.out.println(karakter.size());
+    
+    /** Fungsi Enkripsi.
+     *
+     * @param plainText berupa pesan biasa yang hendak dienkripsi
+     * @param kunci berupa teks biasa sebagai kunci untuk enkripsi
+     * @return
+     */
+    public String encrypt(String plainText, String kunci) {
+        int[] c = new int[plainText.getBytes().length];
+        int[] k = new int[kunci.getBytes().length];
         
-        String kunci = "hai";
-        int[][] encrypted = encrypt(text,kunci);
+//        int[][] result = new int[4][4];
         String hasilEnkripsi = "";
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                hasilEnkripsi += Integer.toHexString(encrypted[j][i])+"";
-            }
-        }
-        System.out.println("plain text: "+text);
-        System.out.println("enkrypted="+hasilEnkripsi);
-        decrypt(hasilEnkripsi, kunci);
-//        convertHex2State(hasilEnkripsi, sbox);
-//        System.out.println(hasilEnkripsi);
-    }
-
-    // fungsi untuk enkripsi
-    private static int[][] encrypt(String plainText, String kunci) {
-        int[][] result = new int[4][4];
         int[][] state = new int[4][4];
         int[][] key = new int[4][4];
-        convertBytes2State(plainText.getBytes(), state);
-        convertBytes2State(kunci.getBytes(), key);
         
+        for (int i = 0; i < c.length; i++) {
+            c[i] = plainText.getBytes()[i];
+        }
+        for (int i = 0; i < k.length; i++) {
+            k[i] = kunci.getBytes()[i];
+        }
+        convertInt2State(c, state);
+        convertInt2State(k, key);
+
         // kunci yang akan digunakan untuk key tiap round
         // butuh: original key + Nr * 16
         int[][] expandedKey = new int[4][4 * Nr + 4];
-        // ronde yang dibutuhkan: -> untuk AES-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
+        // ronde yang dibutuhkan: -> untuk Main-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
         int banyakRonde = 9;
         // ekspansi kunci 
         keyExpansion(key,expandedKey);
 
         // initial round -> addroundkey
-        addRoundKey(state,expandedKey);
+        addRoundKey(state,expandedKey,0);
         
         // pengulangan round 
         for (int i = 0; i < banyakRonde ; i++) {
             subBytes(state);
             shiftRow(state);
             mixColumn(state);
-            addRoundKey(state, expandedKey, 4 * (i + 1));
+            addRoundKey(state, expandedKey, (i+1));
         }
         
         // final round
         subBytes(state);
         shiftRow(state);
-        addRoundKey(state, expandedKey, 40);
+        addRoundKey(state, expandedKey, Nr);
         
         // copy bytes ke string
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                result[i][j] = state[j][i];
+                hasilEnkripsi += Integer.toHexString(state[j][i])+"";
             }
         }
-        return result;
+        return hasilEnkripsi;
     }
 
-    // fungsi untuk dekripsi
-    private static void decrypt(String cipherText, String kunci) {
+    /** Fungsi Dekrip ciphertext.
+     *
+     * @param cipherText merupakan string dalam bentuk hexadecimal TANPA SPASI
+     * @param kunci berupa string dalam bentuk plain (bukan hex)
+     * @return berupa array integer yang nantinya akan di proses menjadi plaintext kembali
+     */
+    public String decrypt(String cipherText, String kunci) {
+        int[] k = new int[kunci.getBytes().length];
+        for (int i = 0; i < k.length; i++) {
+            k[i] = kunci.getBytes()[i];
+        }
+        String hasilDekripsi = "";
         int[][] state = new int[4][4];
-        int[][] key = new int[4][4];
+        int[][] key = new int[4][4];        
         convertHex2State(cipherText, state);
-        convertBytes2State(kunci.getBytes(), key);
-//      // uji chipertext awal:        
-//        System.out.println("\n--------------------------");
-//        for (int i = 0; i < 4; i++) {
-//            for (int j = 0; j < 4; j++) {
-//                System.out.print(state[i][j]+"\t");
-//            }
-//            System.out.println("");
-//        }
-        
+        convertInt2State(k, key);
+       
         // kunci yang akan digunakan untuk key tiap round
         // butuh: original key + Nr * 16
         int[][] expandedKey = new int[4][4 * Nr + 4];
-        // ronde yang dibutuhkan: -> untuk AES-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
+        // ronde yang dibutuhkan: -> untuk Main-128 butuh 10 ronde, tetapi untuk pengulangannya butuh 9 ronde, 1 ronde di final round
         int banyakRonde = 9;
         
-//        keyExpansion(key,expandedKey);
-             
+        keyExpansion(key,expandedKey);
+                    
         // initial round -> addroundkey shiftrow dan subbytes
-        invAddRoundKey(state, expandedKey, 40);
-        
+        addRoundKey(state, expandedKey,Nr); // -> key 40 - 43 -> Nr * 4 = 10*4 = 40
+                
         // pengulangan round 
-        for (int i = 0; i < banyakRonde ; i++) {
-            invSubBytes(state);
+        for (int i = 9; i > 0 ; i--) {
             invShiftRow(state);
+            invSubBytes(state);
+            addRoundKey(state, expandedKey, (i));
             invMixColumn(state);
-            invAddRoundKey(state, expandedKey, 4 * (i + 1));
         }
         
         // final round
         invShiftRow(state);
         invSubBytes(state);
-        invAddRoundKey(state,expandedKey);
+        addRoundKey(state,expandedKey,0);
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (Integer.toHexString(state[j][i]).length() < 2) {
+                    hasilDekripsi += "0"+Integer.toHexString(state[j][i])+"";
+                }else{
+                    hasilDekripsi += Integer.toHexString(state[j][i])+"";
+                }
+            }
+        }
+        return hasilDekripsi;
         
     }
 
-    // fungsi untuk keyExpansion
-    private static void keyExpansion(int[][] inputKey, int[][] expandedKey) {
+    /** Key Expansion.
+     * @param inputKey berupa input key array 4x4 yang akan diekspansi
+     * @param expandedKey sebagai output menyimpan hasil operasi
+     * @see #keyExpansionCore(int[], int) 
+     */
+    private void keyExpansion(int[][] inputKey, int[][] expandedKey) {
         // Kunci awal dari expandedKey adalah input key itu sendiri..
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -236,8 +229,16 @@ public class AES {
         }
     }
     
-    // core dari keyExpansion -> rotasi - subword (subBytes) - Rcon
-    private static void keyExpansionCore(int[] input, int index){
+    /** Key Expansion Core.
+     * merupakan badan dari key expansion yang berisi 3 metode, yaitu:
+     * <p><b>Rotasi</b> -> menggeser index pertama ke ujung kanan array, lalu menggeser index2 yang lain ke kiri
+     * <p><b>SubBytes</b> -> mengganti nilai tiap index array dengan nilai di tabel {@link #SBOX}
+     * <p><b>Rcon</b> -> melakukan operasi XOR di index pertama array dengan nilai di tabel {@link #rcon}
+     * 
+     * @param input merupakan array 1x4 sebagai temporary data
+     * @param index sebagai inputan untuk mengambil nilai {@link #rcon}
+     */
+    private void keyExpansionCore(int[] input, int index){
        // rotasi
        int temp = input[0];
        input[0] = input[1];
@@ -247,7 +248,7 @@ public class AES {
        
        // subwords 
         for (int i = 0; i < 4; i++) {
-            input[i] = sbox[input[i]/16][input[i]%16];
+            input[i] = SBOX[input[i]/16][input[i]%16];
         }
         
         // rcon
@@ -255,32 +256,31 @@ public class AES {
 
     }
     
-    // memasukkan round key dari key ke state, yang sesungguhnya adalah operasi XOR dari keduanya..
-    private static void addRoundKey(int[][] state, int[][] key) {
+    /** Add Round Key.
+     * memasukkan round key dari key ke state, yang sesungguhnya adalah operasi XOR dari keduanya..  
+     * @param state masukan berupa state array 4x4
+     * @param key kunci yang sudah diekspansi menjadi {@code 4*Nr}
+     * @param begim index mulai untuk mengambil key
+     */
+    private void addRoundKey(int[][] state, int[][] key,int begin) {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                state[i][j] ^= key[i][j];
+                state[i][j] ^= key[i][4 * begin + j];
+//                System.out.print((4 * begin + j) + "--> addroundkeybegin " );
             }
+//            System.out.println("");
         }
     }
     
-    private static void addRoundKey(int[][] state, int[][] key,int begin) {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                state[i][j] ^= key[i][begin + j];
-            }
-        }
-    }
-    
-    /** Sub Bytes. Operasi Sub Bytes mengganti setiap elemen state dengan nilai sbox yang sesuai.
-     * tabel referensi yang digunakan adalah tabel <b>{@code sbox}</b>
+    /** Sub Bytes. Operasi Sub Bytes mengganti setiap elemen state dengan nilai SBOX yang sesuai.
+ tabel referensi yang digunakan adalah tabel <b>{@code SBOX}</b>
      * @param state inputan berupa 4x4 array integer
      */
-    private static void subBytes(int[][] state) {
+    private void subBytes(int[][] state) {
         for (int i = 0; i < state.length; i++) {
             for (int j = 0; j < state[0].length; j++) {
                 int hex = state[i][j];
-                state[i][j]=sbox[hex/16][hex%16];
+                state[i][j]=SBOX[hex/16][hex%16];
 //                System.out.print((state[i][j])+"\t");
             }
 //            System.out.println("");
@@ -294,7 +294,7 @@ public class AES {
      * Baris keempat digeser ke kiri 3x.
      * @param state inputan berupa 4x4 array Integer
      */
-    private static void shiftRow(int[][] state) {
+    private void shiftRow(int[][] state) {
         int[][] temp = new int[4][4];
         //row 1 tetap
         temp[0][0] = state[0][0];
@@ -332,9 +332,9 @@ public class AES {
      * 
      * @param state berupa array 4x4 Integer
      * @see #mixColumn(int[][]) 
-     * @see #tabelGalois
+     * @see #GALOIS
      */
-    private static void mixColumn(int[][] state) {
+    private void mixColumn(int[][] state) {
         int temp[][] = new int[4][4];
         
         //kolom 1
@@ -369,22 +369,21 @@ public class AES {
         }
     }
     
-    // konversi dari bytes ke array 4x4
-    private static void convertBytes2State(byte[] bytesText, int[][] state) {
-        for (int i = 0; i < bytesText.length; i++) {
-            state[i%4][i/4]=bytesText[i];
-        }
-    }
-    
-    // konversi dari int ke array 4x4
-    private static void convertInt2State(int[] intText, int[][] state) {
+    /** Konversi Integer Blok ke State array 4x4.
+     * @param intText berupa array Integer 1 dimensi yang merupakan representasi dari sebuah text
+     * @param state berupa array Integer 4x4 sebagai output
+     */
+    private void convertInt2State(int[] intText, int[][] state) {
         for (int i = 0; i < intText.length; i++) {
             state[i%4][i/4]=intText[i];
         }
     }
     
-    // konversi dari hex ke array 4x4 int
-    private static void convertHex2State(String hex, int[][] state){
+    /** Konversi Hex String ke String.
+     * @param hex berupa String hexadecimal tanpa spasi
+     * @param state berupa array Integer 4x4
+     */
+    private void convertHex2State(String hex, int[][] state){
         String tmp = hex;
         int[] result = new int[hex.length()/2];
         for (int i = 0; i < tmp.length(); i+=2) {
@@ -411,7 +410,7 @@ public class AES {
      * @param state inputan berupa 4x4 array Integer
      * @see #shiftRow(int[][]) 
      */
-    private static void invShiftRow(int[][] state) {
+    private void invShiftRow(int[][] state) {
         int[][] temp = new int[4][4];
         //row 1 tetap
         temp[0][0] = state[0][0];
@@ -437,25 +436,29 @@ public class AES {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 state[i][j] = temp[i][j];
+//                System.out.print(state[i][j] + "\t");
             }
+//            System.out.println("");
         }
+//        System.out.println("------------------------>invers shift row");
         // end shiftRow
     }
     
     /** Invers Sub Bytes. Invers dari operasi subBytes()
-     * tabel referensi yang digunakan adalah tabel {@code invsbox}
+     * tabel referensi yang digunakan adalah tabel {@code INV_SBOX}
      * @param state inputan berupa 4x4 array Integer
      * @see #subBytes(int[][]) 
      */
-    private static void invSubBytes(int[][] state) {
+    private void invSubBytes(int[][] state) {
         for (int i = 0; i < state.length; i++) {
             for (int j = 0; j < state[0].length; j++) {
                 int hex = state[i][j];
-                state[i][j]=invsbox[hex/16][hex%16];
-//                System.out.print((state[i][j])+"\t");
+                state[i][j]=INV_SBOX[hex/16][hex%16];
+//                System.out.print(Integer.toHexString(state[i][j])+"\t");
             }
 //            System.out.println("");
         }
+//        System.out.println("---------------------------->invers sub bytes");
     }
 
     /** Operasi Invers Mix Column. Invers dari mixColumn()
@@ -466,10 +469,10 @@ public class AES {
      * 
      * @param state berupa array 4x4 Integer
      * @see #mixColumn(int[][]) 
-     * @see #invTabelGalois
-     * @see #tabelGalois
+     * @see #INV_GALOIS
+     * @see #GALOIS
      */
-    private static void invMixColumn(int[][] state) {
+    private void invMixColumn(int[][] state) {
         int temp[][] = new int[4][4];
         // kolom 1
         temp[0][0] = mc14[state[0][0]/16][state[0][0]%16] ^ mc11[state[1][0]/16][state[1][0]%16] ^ mc13[state[2][0]/16][state[2][0]%16] ^ mc9[state[3][0]/16][state[3][0]%16];
@@ -500,27 +503,17 @@ public class AES {
         for (int i = 0; i < temp.length; i++) {
             for (int j = 0; j < temp[i].length; j++) {
                 state[i][j] = temp[i][j];
+//                System.out.print(state[i][j]+"\t");
             }
+//            System.out.println("");
         }
+//        System.out.println("----------------------->invers Mix Column");
     }
-    
-    private static void invAddRoundKey(int[][] state, int[][] key) {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                state[i][j] ^= key[i][j];
-            }
-        }
-    }
-    
-    private static void invAddRoundKey(int[][] state, int[][] key,int begin) {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                state[i][j] ^= key[i][begin + j];
-            }
-        }
-    }
-    
-    public static int[][] mc2 = {
+       
+    /** Tabel Mix Column x2.
+     * digunakan saat proses {@link #mixColumn(int[][]) }
+     */
+    public final int[][] mc2 = {
               /*0    1      2     3     4     5     6    7      8    9      a    b      c     d    e     f*/
     /*0*/    {0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c, 0x0e, 0x10, 0x12, 0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e},
     /*1*/    {0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x34, 0x36, 0x38, 0x3a, 0x3c, 0x3e},
@@ -539,7 +532,10 @@ public class AES {
     /*e*/    {0xdb, 0xd9, 0xdf, 0xdd, 0xd3, 0xd1, 0xd7, 0xd5, 0xcb, 0xc9, 0xcf, 0xcd, 0xc3, 0xc1, 0xc7, 0xc5},
     /*f*/    {0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9, 0xef, 0xed, 0xe3, 0xe1, 0xe7, 0xe5}};
 
-    public static int[][] mc3 = {
+    /** Tabel Mix Column x3.
+     * digunakan saat proses {@link #mixColumn(int[][]) }
+     */
+    public final int[][] mc3 = {
              /*0    1      2     3     4     5     6    7      8    9      a    b      c     d    e     f*/
     /*0*/    {0x00, 0x03, 0x06, 0x05, 0x0c, 0x0f, 0x0a, 0x09, 0x18, 0x1b, 0x1e, 0x1d, 0x14, 0x17, 0x12, 0x11},
     /*1*/    {0x30, 0x33, 0x36, 0x35, 0x3c, 0x3f, 0x3a, 0x39, 0x28, 0x2b, 0x2e, 0x2d, 0x24, 0x27, 0x22, 0x21},
@@ -558,7 +554,10 @@ public class AES {
     /*e*/    {0x3b, 0x38, 0x3d, 0x3e, 0x37, 0x34, 0x31, 0x32, 0x23, 0x20, 0x25, 0x26, 0x2f, 0x2c, 0x29, 0x2a},
     /*f*/    {0x0b, 0x08, 0x0d, 0x0e, 0x07, 0x04, 0x01, 0x02, 0x13, 0x10, 0x15, 0x16, 0x1f, 0x1c, 0x19, 0x1a}   };
     
-    public static int[][] mc9 = {
+    /**Tabel Mix Column x9.
+     * digunakan saat proses {@link #invMixColumn(int[][]) }
+     */
+    public final int[][] mc9 = {
               /*0    1      2     3     4     5     6    7      8    9      a    b      c     d    e     f*/
     /*0*/    {0x00, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x36, 0x3f, 0x48, 0x41, 0x5a, 0x53, 0x6c, 0x65, 0x7e, 0x77},                          
     /*1*/    {0x90, 0x99, 0x82, 0x8b, 0xb4, 0xbd, 0xa6, 0xaf, 0xd8, 0xd1, 0xca, 0xc3, 0xfc, 0xf5, 0xee, 0xe7}, 
@@ -574,10 +573,13 @@ public class AES {
     /*b*/    {0x47, 0x4e, 0x55, 0x5c, 0x63, 0x6a, 0x71, 0x78, 0x0f, 0x06, 0x1d, 0x14, 0x2b, 0x22, 0x39, 0x30}, 
     /*c*/    {0x9a, 0x93, 0x88, 0x81, 0xbe, 0xb7, 0xac, 0xa5, 0xd2, 0xdb, 0xc0, 0xc9, 0xf6, 0xff, 0xe4, 0xed}, 
     /*d*/    {0x0a, 0x03, 0x18, 0x11, 0x2e, 0x27, 0x3c, 0x35, 0x42, 0x4b, 0x50, 0x59, 0x66, 0x6f, 0x74, 0x7d}, 
-    /*e*/   {0xa1, 0xa8, 0xb3, 0xba, 0x85, 0x8c, 0x97, 0x9e, 0xe9, 0xe0, 0xfb, 0xf2, 0xcd, 0xc4, 0xdf, 0xd6}, 
+    /*e*/    {0xa1, 0xa8, 0xb3, 0xba, 0x85, 0x8c, 0x97, 0x9e, 0xe9, 0xe0, 0xfb, 0xf2, 0xcd, 0xc4, 0xdf, 0xd6}, 
     /*f*/    {0x31, 0x38, 0x23, 0x2a, 0x15, 0x1c, 0x07, 0x0e, 0x79, 0x70, 0x6b, 0x62, 0x5d, 0x54, 0x4f, 0x46}   };
     
-    public static int[][] mc11 = {
+    /**Tabel Mix Column x11.
+     * digunakan saat proses {@link #invMixColumn(int[][]) }
+     */
+    public final int[][] mc11 = {
               /*0    1      2     3     4     5     6    7      8    9      a    b      c     d    e     f*/
     /*0*/    {0x00, 0x0b, 0x16, 0x1d, 0x2c, 0x27, 0x3a, 0x31, 0x58, 0x53, 0x4e, 0x45, 0x74, 0x7f, 0x62, 0x69}, 
     /*1*/    {0xb0, 0xbb, 0xa6, 0xad, 0x9c, 0x97, 0x8a, 0x81, 0xe8, 0xe3, 0xfe, 0xf5, 0xc4, 0xcf, 0xd2, 0xd9}, 
@@ -596,7 +598,10 @@ public class AES {
     /*e*/    {0x7a, 0x71, 0x6c, 0x67, 0x56, 0x5d, 0x40, 0x4b, 0x22, 0x29, 0x34, 0x3f, 0x0e, 0x05, 0x18, 0x13}, 
     /*f*/    {0xca, 0xc1, 0xdc, 0xd7, 0xe6, 0xed, 0xf0, 0xfb, 0x92, 0x99, 0x84, 0x8f, 0xbe, 0xb5, 0xa8, 0xa3}   };
     
-    public static int[][] mc13 = {
+    /**Tabel Mix Column x13.
+     * digunakan saat proses {@link #invMixColumn(int[][]) }
+     */
+    public final int[][] mc13 = {
              /*0    1      2     3     4     5     6    7      8    9      a    b      c     d    e     f*/
     /*0*/    {0x00, 0x0d, 0x1a, 0x17, 0x34, 0x39, 0x2e, 0x23, 0x68, 0x65, 0x72, 0x7f, 0x5c, 0x51, 0x46, 0x4b}, 
     /*1*/    {0xd0, 0xdd, 0xca, 0xc7, 0xe4, 0xe9, 0xfe, 0xf3, 0xb8, 0xb5, 0xa2, 0xaf, 0x8c, 0x81, 0x96, 0x9b}, 
@@ -615,7 +620,10 @@ public class AES {
     /*e*/    {0x0c, 0x01, 0x16, 0x1b, 0x38, 0x35, 0x22, 0x2f, 0x64, 0x69, 0x7e, 0x73, 0x50, 0x5d, 0x4a, 0x47}, 
     /*f*/    {0xdc, 0xd1, 0xc6, 0xcb, 0xe8, 0xe5, 0xf2, 0xff, 0xb4, 0xb9, 0xae, 0xa3, 0x80, 0x8d, 0x9a, 0x97}   };
 
-    public static int[][] mc14 = {
+    /**Tabel Mix Column x14.
+     * digunakan saat proses {@link #invMixColumn(int[][]) }
+     */
+    public final int[][] mc14 = {
               /*0    1      2     3     4     5     6    7      8    9      a    b      c     d    e     f*/
     /*0*/    {0x00, 0x0e, 0x1c, 0x12, 0x38, 0x36, 0x24, 0x2a, 0x70, 0x7e, 0x6c, 0x62, 0x48, 0x46, 0x54, 0x5a}, 
     /*1*/    {0xe0, 0xee, 0xfc, 0xf2, 0xd8, 0xd6, 0xc4, 0xca, 0x90, 0x9e, 0x8c, 0x82, 0xa8, 0xa6, 0xb4, 0xba}, 
@@ -634,7 +642,10 @@ public class AES {
     /*e*/    {0x37, 0x39, 0x2b, 0x25, 0x0f, 0x01, 0x13, 0x1d, 0x47, 0x49, 0x5b, 0x55, 0x7f, 0x71, 0x63, 0x6d}, 
     /*f*/    {0xd7, 0xd9, 0xcb, 0xc5, 0xef, 0xe1, 0xf3, 0xfd, 0xa7, 0xa9, 0xbb, 0xb5, 0x9f, 0x91, 0x83, 0x8d}};
     
-    public static final int[] rcon = {
+    /**Tabel RCon.
+     * digunakan saat proses {@link #keyExpansionCore(int[], int)  }
+     */
+    public final int[] rcon = {
         0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 
     0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 
     0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 
@@ -653,4 +664,3 @@ public class AES {
     0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d
     };
 }
-
