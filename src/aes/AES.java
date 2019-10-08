@@ -280,9 +280,7 @@ public class AES {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 state[i][j] ^= key[i][4 * begin + j];
-//                System.out.print((4 * begin + j) + "--> addroundkeybegin " );
             }
-//            System.out.println("");
         }
     }
     
@@ -295,9 +293,7 @@ public class AES {
             for (int j = 0; j < state[0].length; j++) {
                 int hex = state[i][j];
                 state[i][j]=SBOX[hex/16][hex%16];
-//                System.out.print((state[i][j])+"\t");
             }
-//            System.out.println("");
         }
     }
 
@@ -450,11 +446,8 @@ public class AES {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 state[i][j] = temp[i][j];
-//                System.out.print(state[i][j] + "\t");
             }
-//            System.out.println("");
         }
-//        System.out.println("------------------------>invers shift row");
         // end shiftRow
     }
     
@@ -468,11 +461,8 @@ public class AES {
             for (int j = 0; j < state[0].length; j++) {
                 int hex = state[i][j];
                 state[i][j]=INV_SBOX[hex/16][hex%16];
-//                System.out.print(Integer.toHexString(state[i][j])+"\t");
             }
-//            System.out.println("");
         }
-//        System.out.println("---------------------------->invers sub bytes");
     }
 
     /** Operasi Invers Mix Column. Invers dari mixColumn()
@@ -517,11 +507,8 @@ public class AES {
         for (int i = 0; i < temp.length; i++) {
             for (int j = 0; j < temp[i].length; j++) {
                 state[i][j] = temp[i][j];
-//                System.out.print(state[i][j]+"\t");
             }
-//            System.out.println("");
         }
-//        System.out.println("----------------------->invers Mix Column");
     }
        
     /** Tabel Mix Column x2.
